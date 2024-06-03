@@ -66,7 +66,20 @@ def formulaire_client():
 def enregistrer_client():
     nom = request.form['nom']
     prenom = request.form['prenom']
+
+
+app = Flask(__name__)
 #ajout de la route sur la base du nom d'un client /fichenom/
+
+# Exemple de données clients
+clients = [
+    {"id": 1, "nom": "hamour", "prenom": "siham", "age": 23},
+    {"id": 2, "nom": "belmellat", "prenom": "Marie", "age": 25},
+    {"id": 3, "nom": "junior", "prenom": "rio", "age": 35},
+]
+
+
+#
 @app.route('/fiche_nom/', methods=['GET'])
 def recherche_par_nom():
     nom = request.args.get('nom')
@@ -81,6 +94,33 @@ if __name__ == '__main__':
     app.run(debug=True)
 
     #fin /fichenom/
+
+# Fonction de vérification de l'authentification
+def auth_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not (auth.username == 'user' and auth.password == '12345'):
+            return jsonify({'message': 'Authentification requise !'}), 401
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Route pour la recherche par nom
+@app.route('/fiche_nom/', methods=['GET'])
+@auth_required
+def recherche_par_nom():
+    nom = request.args.get('nom')
+    if nom:
+        # Recherche du client par nom
+        resultat = [client for client in clients if client['nom'] == nom]
+        return jsonify(resultat)
+    else:
+        return "Veuillez fournir un nom de client dans la requête."
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+    
     # Connexion à la base de données
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
