@@ -66,7 +66,21 @@ def formulaire_client():
 def enregistrer_client():
     nom = request.form['nom']
     prenom = request.form['prenom']
+#ajout de la route sur la base du nom d'un client /fichenom/
+@app.route('/fiche_nom/', methods=['GET'])
+def recherche_par_nom():
+    nom = request.args.get('nom')
+    if nom:
+        # Recherche du client par nom
+        resultat = [client for client in clients if client['nom'] == nom]
+        return jsonify(resultat)
+    else:
+        return "Veuillez fournir un nom de client dans la requête."
 
+if __name__ == '__main__':
+    app.run(debug=True)
+
+    #fin /fichenom/
     # Connexion à la base de données
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
