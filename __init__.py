@@ -25,7 +25,7 @@ def lecture():
   # Si l'utilisateur est authentifié
     return "<h2>Bravo, vous êtes authentifié</h2>"
 
-@app.route('/authentification', methods=['GET', 'POST'])
+"""@app.route('/authentification', methods=['GET', 'POST'])
 def authentification():
     if request.method == 'POST':
         # Vérifier les identifiants
@@ -37,7 +37,7 @@ def authentification():
             # Afficher un message d'erreur si les identifiants sont incorrects
             return render_template('formulaire_authentification.html', error=True)
 
-    return render_template('formulaire_authentification.html', error=False)
+    return render_template('formulaire_authentification.html', error=False)"""
 
 @app.route('/fiche_client/<int:post_id>')
 def Readfiche(post_id):
@@ -77,39 +77,30 @@ def enregistrer_client():
     conn.close()
     return redirect('/consultation/')  # Rediriger vers la page d'accueil après l'enregistrement
 
-# Fonction pour vérifier si l'utilisateur "user" est authentifié
-def est_user_authentifie():
-    return session.get('user_authentifie')
-    
-@app.route('/fiche_nom/<string:name>', methods=['GET'])
-def get_client_by_name(name):
-    if not est_user_authentifie():
-        session['name'] = name  # Stocker le nom dans la session
-        return redirect(url_for('authentification_user'))
+
+@app.route('/user_authentification', methods=['GET', 'POST'])
+def user_authentification():
+    if request.method == 'POST':
+        if request.form['username'] == 'user' and request.form['password'] == '12345':
+            session['authentifie'] = True
+            return redirect(url_for('lecture'))
+        else:
+            return render_template('user_auth.html', error=True)
+
+    return render_template('user_auth.html', error=False)
+
+@app.route('/fiche_nom/<post_nom>')
+def Readfiche_nom(post_nom):
+    if not est_authentifie():
+        return redirect(url_for('user_authentification'))
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM clients WHERE nom=?", (name,))
-    client = cursor.fetchone()
+    cursor.execute('SELECT * FROM clients WHERE nom = ?', (post_nom,))
+    data = cursor.fetchall()
     conn.close()
-    return render_template('read_data.html', data=client)
+    # Rendre le template HTML et transmettre les données
+    return render_template('name_data.html', data=data)
+    
 
-@app.route('/authentification_user', methods=['GET', 'POST'])
-def authentification_user():
-    if request.method == 'POST':
-        # Vérifier les identifiants
-        if request.form['username'] == 'user' and request.form['password'] == '12345': # password à cacher par la suite
-            session['user_authentifie'] = True
-            # Rediriger vers la route lecture après une authentification réussie
-            name = session.pop('name', None)
-            if name:
-                return redirect(url_for('get_client_by_name', name=name))
-            else:
-                return redirect(url_for('authentification_user'))  
-                # Redirection vers la page d'authentification si aucun nom n'est en session
-        else:
-            # Afficher un message d'erreur si les identifiants sont incorrects
-            return render_template('authentification.html', error=True)
-    return render_template('authentification.html', error=False)
-                                                                                                                                       
 if __name__ == "__main__":
   app.run(debug=True)
