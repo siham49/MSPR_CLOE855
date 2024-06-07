@@ -91,7 +91,7 @@ def get_client_by_name(name):
     cursor.execute("SELECT * FROM clients WHERE nom=?", (name,))
     client = cursor.fetchone()
     conn.close()
-    return render_template('read_client.html', data=client)
+    return render_template('read_data.html', data=client)
 
 @app.route('/authentification_user', methods=['GET', 'POST'])
 def authentification_user():
